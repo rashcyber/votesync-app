@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+*.db
+server/uploads/candidates/*
+!server/uploads/candidates/.gitkeep
+server/data/
+.DS_Store
+Thumbs.db
