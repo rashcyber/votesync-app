@@ -108,6 +108,16 @@ export default function ElectionDetail() {
     }
   };
 
+  const handleToggleResults = async () => {
+    try {
+      const res = await api.put(`/api/elections/${id}`, { results_public: election.results_public ? 0 : 1 });
+      setElection(res.data.election);
+      toast.success(res.data.election.results_public ? 'Results are now public' : 'Results hidden from public');
+    } catch (err) {
+      toast.error(err.response?.data?.error?.message || 'Failed to update');
+    }
+  };
+
   const handleToggleLanding = async () => {
     const token = localStorage.getItem('adminToken');
     console.log('Admin token present:', !!token);
@@ -302,6 +312,18 @@ export default function ElectionDetail() {
           <BarChart2 className="w-4 h-4" />
           Analytics
         </Link>
+        <button
+          onClick={handleToggleResults}
+          className={`btn btn-sm ${
+            election.results_public
+              ? '!bg-success-50 !text-success-700 !border-success-200 hover:!bg-success-100'
+              : 'btn-secondary'
+          }`}
+          title={election.results_public ? 'Click to hide results from public' : 'Click to make results public'}
+        >
+          {election.results_public ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          {election.results_public ? 'Results Public' : 'Results Hidden'}
+        </button>
         <button
           onClick={handleToggleLanding}
           className={`btn btn-sm ${

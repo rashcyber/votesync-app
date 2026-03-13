@@ -24,6 +24,8 @@ import {
   RefreshCw,
   Bell,
   Mail,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 const EVENT_TYPE_BADGES = {
@@ -65,7 +67,20 @@ export default function LandingPage() {
   const [notifications, setNotifications] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [eventTypeFilter, setEventTypeFilter] = useState('all');
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
 
   const fetchElections = (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -93,7 +108,7 @@ export default function LandingPage() {
 
   const filterElections = (electionList) => {
     return electionList.filter(e => {
-      const matchesSearch = searchQuery === '' || 
+      const matchesSearch = searchQuery === '' ||
         e.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         e.description?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = eventTypeFilter === 'all' || e.event_type === eventTypeFilter;
@@ -112,9 +127,9 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div className="min-h-screen bg-surface-50 transition-colors duration-300">
       {/* ===== Navbar ===== */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-surface-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-surface-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 flex items-center justify-center shadow-md shadow-primary-500/20 group-hover:shadow-lg group-hover:shadow-primary-500/30 transition-shadow">
@@ -127,6 +142,13 @@ export default function LandingPage() {
               <ShieldCheck className="w-4 h-4" />
               Verify Vote
             </Link>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 rounded-lg text-surface-500 hover:text-surface-700 hover:bg-surface-100 dark:hover:bg-surface-200 transition-colors"
+              aria-label="Toggle dark mode"
+            >
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <Link to="/admin/login" className="btn btn-sm btn-secondary">
               <User className="w-4 h-4" />
               Admin
@@ -182,7 +204,7 @@ export default function LandingPage() {
             <form onSubmit={handleLookup} className="max-w-xl mx-auto mb-12">
               <div className="relative group">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-accent-500 to-primary-500 rounded-2xl opacity-20 group-hover:opacity-30 blur transition-opacity" />
-                <div className="relative flex bg-white rounded-xl shadow-2xl shadow-primary-900/20">
+                <div className="relative flex bg-white dark:bg-surface-800 rounded-xl shadow-2xl shadow-primary-900/20">
                   <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400 pointer-events-none" />
                     <input
@@ -194,8 +216,8 @@ export default function LandingPage() {
                     />
                   </div>
                   <button type="submit" className="m-1.5 px-6 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-lg hover:from-primary-500 hover:to-primary-600 transition-all shadow-md shadow-primary-600/30 flex items-center gap-2">
-                    <Search className="w-4 h-4" />
-                    Search
+                    <ArrowRight className="w-4 h-4" />
+                    Lookup
                   </button>
                 </div>
               </div>
@@ -251,34 +273,8 @@ export default function LandingPage() {
           </div>
         ) : (
           <>
-            {/* Search and Filter */}
-            <div className="mb-6 flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-surface-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search elections..."
-                  className="input w-full pl-10"
-                />
-              </div>
-              <select
-                value={eventTypeFilter}
-                onChange={(e) => setEventTypeFilter(e.target.value)}
-                className="input w-full sm:w-48"
-              >
-                <option value="all">All Types</option>
-                <option value="src">SRC</option>
-                <option value="class_rep">Class Rep</option>
-                <option value="hall">Hall</option>
-                <option value="pageant">Pageant</option>
-                <option value="custom">Custom</option>
-              </select>
-            </div>
-
             {/* Section header with tabs */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-3xl font-bold text-surface-900">Elections</h2>
                 <p className="text-surface-500 mt-1">Browse and participate in ongoing elections</p>
@@ -292,12 +288,12 @@ export default function LandingPage() {
                 >
                   <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
                 </button>
-                <div className="bg-surface-100 rounded-lg p-1">
+                <div className="bg-surface-100 dark:bg-surface-200 rounded-lg p-1">
                   <button
                     onClick={() => setActiveTab('active')}
                     className={`relative px-4 py-2 text-sm font-medium rounded-md transition-all ${
                       activeTab === 'active'
-                        ? 'bg-white text-surface-900 shadow-sm'
+                        ? 'bg-white dark:bg-surface-100 text-surface-900 shadow-sm'
                         : 'text-surface-500 hover:text-surface-700'
                     }`}
                   >
@@ -320,7 +316,7 @@ export default function LandingPage() {
                     onClick={() => setActiveTab('completed')}
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                       activeTab === 'completed'
-                        ? 'bg-white text-surface-900 shadow-sm'
+                        ? 'bg-white dark:bg-surface-100 text-surface-900 shadow-sm'
                         : 'text-surface-500 hover:text-surface-700'
                     }`}
                   >
@@ -337,6 +333,32 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Search and Filter */}
+            <div className="mb-8 flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search elections..."
+                  className="input w-full !pl-10"
+                />
+              </div>
+              <select
+                value={eventTypeFilter}
+                onChange={(e) => setEventTypeFilter(e.target.value)}
+                className="input w-full sm:w-48"
+              >
+                <option value="all">All Types</option>
+                <option value="src">SRC</option>
+                <option value="class_rep">Class Rep</option>
+                <option value="hall">Hall</option>
+                <option value="pageant">Pageant</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+
             {/* Public Notifications/Messages */}
             {notifications.length > 0 && (
               <div className="mb-8 space-y-3">
@@ -345,19 +367,19 @@ export default function LandingPage() {
                     key={notification.id}
                     className={`p-4 rounded-xl border ${
                       notification.type === 'alert'
-                        ? 'bg-red-50 border-red-200'
+                        ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800'
                         : notification.type === 'reminder'
-                        ? 'bg-amber-50 border-amber-200'
-                        : 'bg-blue-50 border-blue-200'
+                        ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800'
+                        : 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
                         notification.type === 'alert'
-                          ? 'bg-red-100 text-red-600'
+                          ? 'bg-red-100 dark:bg-red-900/50 text-red-600'
                           : notification.type === 'reminder'
-                          ? 'bg-amber-100 text-amber-600'
-                          : 'bg-blue-100 text-blue-600'
+                          ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-600'
+                          : 'bg-blue-100 dark:bg-blue-900/50 text-blue-600'
                       }`}>
                         {notification.type === 'alert' ? <Bell className="w-5 h-5" /> :
                          notification.type === 'reminder' ? <Mail className="w-5 h-5" /> :
@@ -482,8 +504,8 @@ function Stat({ value, label }) {
 
 function FeatureCard({ icon, title, desc }) {
   return (
-    <div className="bg-white rounded-xl border border-surface-100 p-5 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+    <div className="bg-white dark:bg-surface-100 rounded-xl border border-surface-100 dark:border-surface-200 p-5 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary-50 dark:bg-primary-100 text-primary-600 flex items-center justify-center">
         {icon}
       </div>
       <div>
@@ -518,16 +540,17 @@ function ElectionCard({ election }) {
   const statusBadgeClass = STATUS_BADGES[election.status] || 'badge-gray';
   const statusLabel = STATUS_LABELS[election.status] || election.status;
   const isActive = election.status === 'active';
+  const isCompleted = election.status === 'completed';
   const isPaid = election.voting_type === 'paid';
-  
+
   const totalVotes = election.total_votes || 0;
   const positionCount = election.position_count || 0;
   const candidateCount = election.candidate_count || 0;
 
   return (
-    <div className="group bg-white rounded-2xl border border-surface-100 shadow-sm hover:shadow-xl hover:border-surface-200 transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden">
+    <div className="group bg-white dark:bg-surface-100 rounded-2xl border border-surface-100 dark:border-surface-200 shadow-sm hover:shadow-xl hover:border-surface-200 dark:hover:border-surface-300 transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden">
       {/* Colored top accent */}
-      <div className={`h-1 ${isActive ? 'bg-gradient-to-r from-success-500 to-success-400' : 'bg-surface-200'}`} />
+      <div className={`h-1 ${isActive ? 'bg-gradient-to-r from-success-500 to-success-400' : isCompleted ? 'bg-gradient-to-r from-surface-300 to-surface-400' : 'bg-surface-200'}`} />
 
       <div className="p-5 flex flex-col flex-1">
         {/* Header badges */}
@@ -592,7 +615,7 @@ function ElectionCard({ election }) {
 
         {/* Countdown */}
         {isActive && election.end_date && (
-          <div className="bg-surface-50 rounded-lg px-3 py-2 mb-4">
+          <div className="bg-surface-50 dark:bg-surface-200 rounded-lg px-3 py-2 mb-4">
             <CountdownTimer targetDate={election.end_date} label="Ends in" compact />
           </div>
         )}
@@ -604,22 +627,27 @@ function ElectionCard({ election }) {
         <div className="flex gap-2 pt-1">
           {isActive && (
             <Link
-              to={`/vote/${election.id}`}
+              to={isPaid ? `/vote/${election.id}/paid` : `/vote/${election.id}`}
               className="btn btn-primary flex-1 text-center group-hover:shadow-lg group-hover:shadow-primary-500/20 transition-shadow"
             >
               <Vote className="w-4 h-4" />
               Vote Now
             </Link>
           )}
-          {(election.results_public || election.status === 'completed') && (
+          {election.results_public ? (
             <Link
               to={`/election/${election.id}/results`}
               className="btn btn-secondary flex-1 text-center"
             >
               <BarChart3 className="w-4 h-4" />
-              Results
+              View Results
             </Link>
-          )}
+          ) : isCompleted ? (
+            <div className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-surface-50 dark:bg-surface-200 text-surface-400 text-sm">
+              <Lock className="w-3.5 h-3.5" />
+              Results pending
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
